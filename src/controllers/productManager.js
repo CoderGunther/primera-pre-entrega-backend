@@ -32,26 +32,42 @@ class ProductManager {
     if (!productById) return "Producto No Encontrado";
     return productById;
   };
-
   updateProduct = async (id, product) => {
     let productById = await this.exist(id);
+
     if (!productById) return "Producto No Encontrado";
-    await this.deleteProducts(id);
+
+    // Obtener los productos existentes
+
     let productOld = await this.readProducts();
-    let products = [{ ...product, id: id }, ...productOld];
-    await this.writeProducts(products);
+
+    // Buscar el índice del producto a actualizar
+
+    let productIndex = productOld.findIndex((p) => p.id === id);
+
+    if (productIndex === -1) return "Producto No Encontrado";
+
+    // Actualizar el producto existente
+
+    productOld[productIndex] = { ...product, id: id };
+
+    // Escribir los productos actualizados
+
+    await this.writeProducts(productOld);
+
     return "Producto Actualizado";
   };
-
-  deleteProducts = async (id) => {
-    let products = await this.readProducts();
-    let existProducts = products.some((prod) => prod.id === id);
-    if (existProducts) {
-      let filterProducts = products.fiter((prod) => prod.id === id);
-      await this.writeProducts(filterProducts);
-      return "Producto Eliminado";
-    }
-    return "Producto a Eliminar Inexistente";
-  };
 }
+
+deleteProducts = async (id) => {
+  let products = await this.readProducts();
+  let existProducts = products.some((prod) => prod.id === id);
+  if (existProducts) {
+    let filterProducts = products.filter((prod) => prod.id !== id); // Corrección aquí
+    await this.writeProducts(filterProducts);
+    return "Producto Eliminado";
+  }
+  return "Producto a Eliminar Inexistente";
+};
+
 export default ProductManager;
